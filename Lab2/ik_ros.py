@@ -37,8 +37,8 @@ class MyNode(hm.HelloNode):
         
         q = [
             0.0,                                # base_link (fixed)
-            0.0,                                # joint_base_translation (virtual)
-            get_pos('joint_base_rotation'),      # joint_base_rotation (virtual)
+            get_pos('joint_base_translation'),  # joint_base_translation (virtual)
+            get_pos('joint_base_rotation'),     # joint_base_rotation (virtual)
             get_pos('joint_lift'),
             0.0,                                # joint_mast (fixed)
             get_pos('wrist_extension') / 4.0,   # link_arm_l4
@@ -57,6 +57,7 @@ class MyNode(hm.HelloNode):
 target_point = [-0.043, -0.441, 0.654]
 target_orientation = ikpy.utils.geometry.rpy_matrix(0.0, 0.0, -np.pi/2) # [roll, pitch, yaw]
 
+# TODO (maybe later) use ROS2 to home the robot
 # Setup the Python API
 robot = stretch_body.robot.Robot()
 robot.startup()
@@ -82,7 +83,7 @@ joints_to_remove = [l for l in modified_urdf._joints if l.name in names_of_joint
 for jr in joints_to_remove:
     modified_urdf._joints.remove(jr)
 
-# Add virtual base joint
+# Add virtual base rotation joint
 joint_base_rotation = urdfpy.Joint(name='joint_base_rotation',
                                       parent='base_link',
                                       child='link_base_rotation',
@@ -96,6 +97,8 @@ link_base_rotation = urdfpy.Link(name='link_base_rotation',
                                     visuals=None,
                                     collisions=None)
 modified_urdf._links.append(link_base_rotation)
+
+# Add virtual base joint
 joint_base_translation = urdfpy.Joint(name='joint_base_translation',
                                       parent='base_link',
                                       child='link_base_translation',
@@ -109,6 +112,7 @@ link_base_translation = urdfpy.Link(name='link_base_translation',
                                     visuals=None,
                                     collisions=None)
 modified_urdf._links.append(link_base_translation)
+
 # amend the chain
 for j in modified_urdf._joints:
     if j.name == 'joint_mast':
