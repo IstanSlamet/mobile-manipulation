@@ -5,6 +5,9 @@ import ikpy.chain
 import importlib.resources as importlib_resources
 import hello_helpers.hello_misc as hm
 
+# NOTE before running: `python3 -m pip install --upgrade ikpy graphviz urchin networkx`
+
+
 class MyNode(hm.HelloNode):
     def __init__(self):
         hm.HelloNode.__init__(self)
@@ -22,23 +25,34 @@ class MyNode(hm.HelloNode):
         self.move_to_pose({'joint_lift':q_lift, 'joint_arm':q_arm}, blocking=True)
         self.move_to_pose({'joint_wrist_yaw':q_yaw, 'joint_writst_roll':q_roll, 'joint_wrist_pitch':q_pitch}, blocking=True)
         self.move_to_pose({'translate_mobile_base':q_base}, blocking=True)
-    # def get_current_configuration():
-    #         def bound_range(name, value):
-    #         names = [l.name for l in chain.links]
-    #         index = names.index(name)
-    #         bounds = chain.links[index].bounds
-    #         return min(max(value, bounds[0]), bounds[1])
+        
+    
+    def get_current_configuration_ros(self):
+        def get_pos(name):
+            try:
+                idx = self.joint_state.name.index(name)
+                return self.joint_state.position[idx]
+            except ValueError:
+                return 0.0
+        
+        q = [
+            0.0,                                # base_link (fixed)
+            0.0,                                # joint_base_translation (virtual)
+            get_pos('joint_base_rotation'),      # joint_base_rotation (virtual)
+            get_pos('joint_lift'),
+            0.0,                                # joint_mast (fixed)
+            get_pos('wrist_extension') / 4.0,   # link_arm_l4
+            get_pos('wrist_extension') / 4.0,   # link_arm_l3
+            get_pos('wrist_extension') / 4.0,   # link_arm_l2
+            get_pos('wrist_extension') / 4.0,   # link_arm_l1/l0
+            get_pos('joint_wrist_yaw'),
+            0.0,                                # joint_wrist_yaw_bottom (fixed)
+            get_pos('joint_wrist_pitch'),
+            get_pos('joint_wrist_roll'),
+            0.0, 0.0                            # tool/center (fixed)
+        ]
+        return q
 
-    #     q_base = 0.0
-    #     q_base_rot = bound_range('joint_base_rotation', robot..status['pos'])
-    #     q_lift = bound_range('joint_lift', robot.lift.status['pos'])
-    #     q_arml = bound_range('joint_arm_l0', robot.arm.status['pos'] / 4.0)
-    #     q_yaw = bound_range('joint_wrist_yaw', robot.end_of_arm.status['wrist_yaw']['pos'])
-    #     q_pitch = bound_range('joint_wrist_pitch', robot.end_of_arm.status['wrist_pitch']['pos'])
-    #     q_roll = bound_range('joint_wrist_roll', robot.end_of_arm.status['wrist_roll']['pos'])
-    #     return [0.0, q_base, q_base_rot, q_lift, 0.0, q_arml, q_arml, q_arml, q_arml, q_yaw, 0.0, q_pitch, q_roll, 0.0, 0.0]
-
-# NOTE before running: `python3 -m pip install --upgrade ikpy graphviz urchin networkx`
 
 target_point = [-0.043, -0.441, 0.654]
 target_orientation = ikpy.utils.geometry.rpy_matrix(0.0, 0.0, -np.pi/2) # [roll, pitch, yaw]
