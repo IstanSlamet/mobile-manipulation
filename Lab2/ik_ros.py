@@ -5,6 +5,7 @@ import ikpy.chain
 import importlib.resources as importlib_resources
 import hello_helpers.hello_misc as hm
 from std_srvs.srv import Trigger
+from std_srvs.srv import Trigger
 
 # NOTE before running: `python3 -m pip install --upgrade ikpy graphviz urchin networkx`
 
@@ -75,17 +76,16 @@ class MyNode(hm.HelloNode):
         return q
 
 
-target_point_1 = [1.5, 0.2, 0.40] #[-0.043, -0.441, 0.654]
-target_orientation_1 = ikpy.utils.geometry.rpy_matrix(0.0, 0.0, np.pi/4) # [roll, pitch, yaw]
+target_point = [-0.043, -0.441, 0.654]
+target_orientation = ikpy.utils.geometry.rpy_matrix(0.0, 0.0, -np.pi/2) # [roll, pitch, yaw]
 
-target_point_2 = [0.5, 0.2, 0.3] #[-0.043, -0.441, 0.654]
-target_orientation_2 = ikpy.utils.geometry.rpy_matrix(0.0, 0.0, -np.pi/4) # [roll, pitch, yaw]
-
-target_point_3 = [0.5, 0.2, 0.4] #[-0.043, -0.441, 0.654]
-target_orientation_3 = ikpy.utils.geometry.rpy_matrix(0.0, 0.0, np.pi/2) # [roll, pitch, yaw]
-
-target_point_4 = [-0.5, 0.1, 0.2] #[-0.043, -0.441, 0.654]
-target_orientation_4 = ikpy.utils.geometry.rpy_matrix(0.0, 0.0, -np.pi/2) # [roll, pitch, yaw]
+# TODO (maybe later) use ROS2 to home the robot
+# Setup the Python API
+robot = stretch_body.robot.Robot()
+robot.startup()
+# Ensure robot is homed
+if not robot.is_calibrated():
+    robot.home()
 
 pkg_path = str(importlib_resources.files('stretch_urdf'))
 urdf_file_path = pkg_path + '/SE3/stretch_description_SE3_eoa_wrist_dw3_tool_sg3.urdf'
@@ -187,10 +187,5 @@ def get_current_grasp_pose():
 
 
 # robot.stow()
-move_to_grasp_goal(target_point_1, target_orientation_1)
+move_to_grasp_goal(target_point, target_orientation)
 print(get_current_grasp_pose())
-move_to_grasp_goal(target_point_2, target_orientation_2)
-print(get_current_grasp_pose())
-move_to_grasp_goal(target_point_3, target_orientation_3)
-print(get_current_grasp_pose())
-move_to_grasp_goal(target_point_4, target_orientation_4)
