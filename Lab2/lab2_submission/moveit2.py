@@ -8,6 +8,8 @@ from hello_helpers.hello_misc import HelloNode
 import moveit2_utils
 
 # Make sure to run `ros2 launch stretch_core stretch_driver.launch.py`
+# NOTE launch rviz: `ros2 launch stretch_moveit2 movegroup_moveit2_stretch3.launch.py`
+
 
 class MoveMe(HelloNode):
     def __init__(self):
